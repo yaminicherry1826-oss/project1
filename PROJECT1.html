@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogMaster 2.0 - Smart Construction Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="70" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="80" r="2.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px); }
+            100% { transform: translateX(100px); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .status-online {
+            color: #28a745;
+        }
+
+        .status-offline {
+            color: #dc3545;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #2a5298;
+            border-bottom: 3px solid #2a5298;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2a5298;
+        }
+
+        .upload-area {
+            border: 3px dashed #2a5298;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #1e3c72;
+        }
+
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            font-size: 1.2rem;
+            padding: 20px 40px;
+            border-radius: 50px;
+            animation: pulse 2s infinite;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s ease;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .qr-scanner {
+            width: 300px;
+            height: 300px;
+            border: 3px solid #2a5298;
+            border-radius: 15px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qr-scanner::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #ff4444;
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-150px); }
+            100% { transform: translateY(150px); }
+        }
+
+        .voice-recorder {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .voice-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px;
+        }
+
+        .voice-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-btn.recording {
+            animation: pulse 1s infinite;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .emergency-panel {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .sos-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            background: #ff0000;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .sos-button:hover {
+            transform: scale(1.1);
+        }
+
+        .material-tracker {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .material-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+            text-align: center;
+        }
+
+        .material-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .material-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2a5298;
+            margin: 10px 0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .input-group button {
+            padding: 8px 15px;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .chart {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #f8f9fa 25%, transparent 25%), 
+                        linear-gradient(-45deg, #f8f9fa 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #f8f9fa 75%), 
+                        linear-gradient(-45deg, transparent 75%, #f8f9fa 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border-radius: 10px;
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            padding: 20px;
+        }
+
+        .chart-bar {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            border-radius: 5px 5px 0 0;
+            min-width: 40px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            padding: 10px 5px;
+            animation: growUp 1s ease-out;
+        }
+
+        @keyframes growUp {
+            from { height: 0; }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2a5298;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                margin: 0;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .tab-content {
+                padding: 20px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .qr-scanner {
+                width: 250px;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>LogMaster 2.0 🚀</h1>
+            <p>Smart AI-Based Construction Management</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span id="connectionStatus" class="status-online">🟢 Online</span>
+            </div>
+            <div class="status-item">
+                <span>📍 Site: Construction Zone A</span>
+            </div>
+            <div class="status-item">
+                <span id="currentTime"></span>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">
+                📊 Dashboard
+            </button>
+            <button class="nav-tab" onclick="showTab('ai-detection')">
+                🤖 AI Detection
+            </button>
+            <button class="nav-tab" onclick="showTab('attendance')">
+                🎫 Attendance
+            </button>
+            <button class="nav-tab" onclick="showTab('voice-notes')">
+                🎤 Voice Notes
+            </button>
+            <button class="nav-tab" onclick="showTab('materials')">
+                🧱 Materials
+            </button>
+            <button class="nav-tab" onclick="showTab('emergency')">
+                🚨 Emergency
+            </button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">Project Overview</div>
+                </div>
+                <div class="grid">
+                    <div class="stat-card">
+                        <div class="stat-number">73%</div>
+                        <div class="stat-label">Project Complete</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">Engineers On-Site</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Issues Detected</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Safety Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">📈</div>
+                    <div class="feature-title">Weekly Progress</div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart">
+                        <div class="chart-bar" style="height: 60%;">Mon<br>60%</div>
+                        <div class="chart-bar" style="height: 75%;">Tue<br>75%</div>
+                        <div class="chart-bar" style="height: 45%;">Wed<br>45%</div>
+                        <div class="chart-bar" style="height: 80%;">Thu<br>80%</div>
+                        <div class="chart-bar" style="height: 90%;">Fri<br>90%</div>
+                        <div class="chart-bar" style="height: 65%;">Sat<br>65%</div>
+                        <div class="chart-bar" style="height: 70%;">Sun<br>70%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-warning">
+                ⚠️ <strong>Alert:</strong> Material delivery scheduled for tomorrow at 9:00 AM
+            </div>
+        </div>
+
+        <!-- AI Detection Tab -->
+        <div id="ai-detection" class="tab-content">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🤖</div>
+                    <div class="feature-title">AI-Based Issue Detection</div>
+                </div>
+                
+                <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📷</div>
+                    <h3>Upload Construction Photo</h3>
+                    <p>AI will automatically scan for cracks, rust, and structural issues</p>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="analyzePhoto(this)">
+                </div>
+
+                <div id="analysisResult" class="hidden">
+                    <div class="alert alert-danger">
+                        🚨 <strong>Major Crack Detected!</strong> Priority Level: HIGH
+                        <br>Location: Foundation Wall - Section B
+                        <br>Recommended Action: Immediate inspection required
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 85%"></div>
+                    </div>
+                    <p><strong>AI Confidence:</strong> 85% - Structural Issue Detected</p>
+                </div>
+
+                <div class="grid" style="margin-top: 30px;">
+                    <div class="feature-card">
+                        <h4>🔍 Recent Scans</h4>
+                        <div style="text-align: left; margin-top: 15px;">
+                            <div style="padding: 10px; border-left: 4px solid #dc3545; margin: 10px 0; background: #f8f9fa;">
+                                <strong>Crack Detection</strong><br>
+                                <small>Foundation - 2 hours ago</small>
+                            </div>
+                            <div style="padding: 10px; border-left: 4px solid #ffc107; margin: 10px 0; background: #f8f9fa;">
+                                <strong>Rust Spots</strong><br>
+                                <small>Steel Beam - 4 hours ago</small>
+                            </div>
+                            <div style="padding: 10px; border-left: 4px solid #28a745; margin: 10px 0; background: #f8f9fa;">
+                                <strong>No Issues</strong><br>
+                                <small>Wall Section C - 6 hours ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🎫</div>
+                    <div class="feature-title">QR Code / NFC Attendance</div>
+                </div>
+                
+                <div class="qr-scanner">
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📱</div>
+                        <p><strong>Scan QR Code</strong></p>
+                        <p>Point camera at site QR code</p>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin: 20px 0;">
+                    <button class="btn btn-primary" onclick="simulateAttendance()">
+                        📷 Start QR Scanner
+                    </button>
+                    <button class="btn btn-success" onclick="simulateNFC()" style="margin-left: 10px;">
+                        📡 Tap NFC
+                    </button>
+                </div>
+
+                <div id="attendanceResult" class="hidden">
+                    <div class="alert alert-success">
+                        ✅ <strong>Check-in Successful!</strong><br>
+                        Engineer: Rajesh Kumar<br>
+                        Time: <span id="checkInTime"></span><br>
+                        Location: Site Entrance Gate A
+                    </div>
+                </div>
+
+                <div class="feature-card" style="margin-top: 20px;">
+                    <h4>👥 Today's Attendance</h4>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                            <span><strong>Rajesh Kumar</strong></span>
+                            <span style="color: #28a745;">✅ 08:30 AM</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                            <span><strong>Priya Sharma</strong></span>
+                            <span style="color: #28a745;">✅ 08:45 AM</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                            <span><strong>Amit Singh</strong></span>
+                            <span style="color: #28a745;">✅ 09:00 AM</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px;">
+                            <span><strong>Sunita Patel</strong></span>
+                            <span style="color: #dc3545;">❌ Not Checked In</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Notes Tab -->
+        <div id="voice-notes" class="tab-content">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🎤</div>
+                    <div class="feature-title">Voice Notes with Auto-Translate</div>
+                </div>
+                
+                <div class="voice-recorder">
+                    <h3>Record Voice Note</h3>
+                    <p>Speak in any language - Auto-translates to Hindi/English</p>
+                    
+                    <button class="voice-btn" id="voiceBtn" onclick="toggleRecording()">
+                        🎤
+                    </button>
+                    
+                    <div id="recordingStatus" class="hidden">
+                        <div class="alert alert-success">
+                            🎙️ <strong>Recording...</strong> Speak clearly into microphone
+                        </div>
+                    </div>
+                    
+                    <div id="translationResult" class="hidden">
+                        <div class="alert alert-success">
+                            <strong>Original (Hindi):</strong> "आज की प्रगति अच्छी है, दीवार का काम पूरा हो गया"<br>
+                            <strong>Translation (English):</strong> "Today's progress is good, wall work is completed"
+                        </div>
+                    </div>
+                </div>
+
+                <div class="feature-card">
+                    <h4>🗣️ Recent Voice Notes</h4>
+                    <div style="margin-top: 15px;">
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <strong>Foundation Progress Update</strong>
+                                <small>2 hours ago</small>
+                            </div>
+                            <p style="color: #666; margin-bottom: 10px;">"Foundation work 80% complete. Need more cement bags tomorrow."</p>
+                            <button class="btn btn-primary" style="padding: 5px 15px; font-size: 0.9rem;">▶️ Play</button>
+                        </div>
+                        <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 10px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <strong>Safety Inspection</strong>
+                                <small>4 hours ago</small>
+                            </div>
+                            <p style="color: #666; margin-bottom: 10px;">"All safety equipment checked. Helmets and harnesses in good condition."</p>
+                            <button class="btn btn-primary" style="padding: 5px 15px; font-size: 0.9rem;">▶️ Play</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Materials Tab -->
+        <div id="materials" class="tab-content">
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🧱</div>
+                    <div class="feature-title">Material Usage Tracking</div>
+                </div>
+                
+                <div class="material-tracker">
+                    <div class="material-item">
+                        <div class="material-icon">🏗️</div>
+                        <h4>Cement Bags</h4>
+                        <div class="material-count" id="cementCount">45</div>
+                        <div class="input-group">
+                            <input type="number" id="cementInput" placeholder="Add/Remove" min="1">
+                            <button onclick="updateMaterial('cement', 'add')">+</button>
+                            <button onclick="updateMaterial('cement', 'remove')">-</button>
+                        </div>
+                    </div>
+                    
+                    <div class="material-item">
+                        <div class="material-icon">🧱</div>
+                        <h4>Bricks</h4>
+                        <div class="material-count" id="bricksCount">2500</div>
+                        <div class="input-group">
+                            <input type="number" id="bricksInput" placeholder="Add/Remove" min="1">
+                            <button onclick="updateMaterial('bricks', 'add')">+</button>
+                            <button onclick="updateMaterial('bricks', 'remove')">-</button>
+                        </div>
+                    </div>
+                    
+                    <div class="material-item">
+                        <div class="material-icon">🔩</div>
+                        <h4>Steel Bars</h4>
+                        <div class="material-count" id="steelCount">120</div>
+                        <div class="input-group">
+                            <input type="number" id="steelInput" placeholder="Add/Remove" min="1">
+                            <button onclick="updateMaterial('steel', 'add')">+</button>
+                            <button onclick="updateMaterial('steel', 'remove')">-</button>
+                        </div>
+                    </div>
+                    
+                    <div class="material-item">
+                        <div class="material-icon">🪣</div>
+                        <h4>Paint Buckets</h4>
+                        <div class="material-count" id="paintCount">25</div>
+                        <div class="input-group">
+                            <input type="number" id="paintInput" placeholder="Add/Remove" min="1">
+                            <button onclick="updateMaterial('paint', 'add')">+</button>
+                            <button onclick="updateMaterial('paint', 'remove')">-</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning" id="materialAlert" style="display: none;">
+                    ⚠️ <strong>Low Stock Alert:</strong> <span id="alertMessage"></span>
+                </div>
+
+                <div class="feature-card">
+                    <h4>📊 Usage Analytics</h4>
+                    <div style="margin-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                            <span>Daily Cement Usage</span>
+                            <span><strong>8 bags/day</strong></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee;">
+                            <span>Wastage Rate</span>
+                            <span style="color: #28a745;"><strong>2.5%</strong> (Good)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 10px;">
+                            <span>Cost Efficiency</span>
+                            <span style="color: #28a745;"><strong>95%</strong> (Excellent)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Tab -->
+        <div id="emergency" class="tab-content">
+            <div class="emergency-panel">
+                <h2>🚨 Emergency Response System</h2>
+                <p>3-Layer Safety System: Voice Detection + Manual SOS + Shake Detection</p>
+                
+                <div class="sos-button" onclick="triggerSOS()">
+                    SOS<br>🆘
+                </div>
+                
+                <p><strong>Emergency Contacts:</strong></p>
+                <p>📞 Site Manager: +91-9876543210</p>
+                <p>🚑 Emergency: 108</p>
+                <p>👮 Police: 100</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">🎤</div>
+                    <div class="feature-title">Voice-Based Emergency Detection</div>
+                </div>
+                
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">🔊</div>
+                    <h4>Always Listening for Emergency Keywords</h4>
+                    <p>Detects: "Help!", "SOS", "Emergency", "Accident"</p>
+                    <p>Threshold: 85-90 dB + Voice Recognition</p>
+                    
+                    <div class="alert alert-success">
+                        ✅ <strong>Voice Detection Active</strong><br>
+                        Status: Monitoring background audio<br>
+                        Sensitivity: High (Construction Environment)
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="testVoiceEmergency()">
+                        🎤 Test Voice Emergency
+                    </button>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">Shake Detection</div>
+                </div>
+                
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 2rem; margin-bottom: 15px;">📳</div>
+                    <h4>Automatic Fall Detection</h4>
+                    <p>Detects sudden impacts and falls</p>
+                    
+                    <div class="alert alert-success">
+                        ✅ <strong>Accelerometer Active</strong><br>
+                        Monitoring device movement patterns
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="testShakeEmergency()">
+                        📱 Test Shake Detection
+                    </button>
+                </div>
+            </div>
+
+            <div id="emergencyAlert" class="hidden">
+                <div class="alert alert-danger">
+                    🚨 <strong>EMERGENCY TRIGGERED!</strong><br>
+                    📍 Location: Construction Site A - Section B<br>
+                    🕐 Time: <span id="emergencyTime"></span><br>
+                    📞 Calling emergency contacts...<br>
+                    🚑 Ambulance dispatched
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let isRecording = false;
+        let isOnline = navigator.onLine;
+        let materials = {
+            cement: 45,
+            bricks: 2500,
+            steel: 120,
+            paint: 25
+        };
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+            updateConnectionStatus();
+            
+            // Listen for online/offline events
+            window.addEventListener('online', updateConnectionStatus);
+            window.addEventListener('offline', updateConnectionStatus);
+        });
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                '🕐 ' + now.toLocaleTimeString();
+        }
+
+        // Update connection status
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (navigator.onLine) {
+                statusElement.innerHTML = '🟢 Online';
+                statusElement.className = 'status-online';
+                isOnline = true;
+            } else {
+                statusElement.innerHTML = '🔴 Offline - Auto Sync Pending';
+                statusElement.className = 'status-offline';
+                isOnline = false;
+            }
+        }
+
+        // Tab navigation
+        function showTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+        }
+
+        // AI Photo Analysis
+        function analyzePhoto(input) {
+            if (input.files && input.files[0]) {
+                const resultDiv = document.getElementById('analysisResult');
+                resultDiv.classList.add('hidden');
+                
+                // Simulate AI analysis
+                setTimeout(() => {
+                    resultDiv.classList.remove('hidden');
+                    
+                    // Show notification
+                    showNotification('AI Analysis Complete - Issue Detected!', 'danger');
+                }, 2000);
+            }
+        }
+
+        // Attendance functions
+        function simulateAttendance() {
+            setTimeout(() => {
+                const resultDiv = document.getElementById('attendanceResult');
+                const timeSpan = document.getElementById('checkInTime');
+                timeSpan.textContent = new Date().toLocaleTimeString();
+                resultDiv.classList.remove('hidden');
+                
+                showNotification('Attendance marked successfully!', 'success');
+            }, 1500);
+        }
+
+        function simulateNFC() {
+            setTimeout(() => {
+                const resultDiv = document.getElementById('attendanceResult');
+                const timeSpan = document.getElementById('checkInTime');
+                timeSpan.textContent = new Date().toLocaleTimeString();
+                resultDiv.classList.remove('hidden');
+                
+                showNotification('NFC check-in successful!', 'success');
+            }, 1000);
+        }
+
+        // Voice recording
+        function toggleRecording() {
+            const btn = document.getElementById('voiceBtn');
+            const status = document.getElementById('recordingStatus');
+            const result = document.getElementById('translationResult');
+            
+            if (!isRecording) {
+                // Start recording
+                isRecording = true;
+                btn.classList.add('recording');
+                btn.innerHTML = '⏹️';
+                status.classList.remove('hidden');
+                result.classList.add('hidden');
+                
+                // Simulate recording for 3 seconds
+                setTimeout(() => {
+                    stopRecording();
+                }, 3000);
+            } else {
+                stopRecording();
+            }
+        }
+
+        function stopRecording() {
+            const btn = document.getElementById('voiceBtn');
+            const status = document.getElementById('recordingStatus');
+            const result = document.getElementById('translationResult');
+            
+            isRecording = false;
+            btn.classList.remove('recording');
+            btn.innerHTML = '🎤';
+            status.classList.add('hidden');
+            
+            // Show translation result
+            setTimeout(() => {
+                result.classList.remove('hidden');
+                showNotification('Voice note translated successfully!', 'success');
+            }, 1000);
+        }
+
+        // Material tracking
+        function updateMaterial(type, action) {
+            const input = document.getElementById(type + 'Input');
+            const count = document.getElementById(type + 'Count');
+            const value = parseInt(input.value) || 1;
+            
+            if (action === 'add') {
+                materials[type] += value;
+            } else if (action === 'remove') {
+                materials[type] = Math.max(0, materials[type] - value);
+            }
+            
+            count.textContent = materials[type];
+            input.value = '';
+            
+            // Check for low stock
+            checkLowStock(type);
+            
+            showNotification(`${type} updated: ${materials[type]} units`, 'success');
+        }
+
+        function checkLowStock(type) {
+            const alertDiv = document.getElementById('materialAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            let lowStockThresholds = {
+                cement: 10,
+                bricks: 500,
+                steel: 20,
+                paint: 5
+            };
+            
+            if (materials[type] <= lowStockThresholds[type]) {
+                alertMessage.textContent = `${type} stock is low (${materials[type]} remaining)`;
+                alertDiv.style.display = 'block';
+            } else {
+                alertDiv.style.display = 'none';
+            }
+        }
+
+        // Emergency functions
+        function triggerSOS() {
+            const alertDiv = document.getElementById('emergencyAlert');
+            const timeSpan = document.getElementById('emergencyTime');
+            
+            timeSpan.textContent = new Date().toLocaleTimeString();
+            alertDiv.classList.remove('hidden');
+            
+            // Simulate emergency response
+            showNotification('🚨 EMERGENCY ALERT SENT! Help is on the way!', 'danger');
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                alertDiv.classList.add('hidden');
+            }, 10000);
+        }
+
+        function testVoiceEmergency() {
+            showNotification('🎤 Voice Emergency Test: "HELP!" detected at 92 dB', 'danger');
+            setTimeout(() => {
+                triggerSOS();
+            }, 1000);
+        }
+
+        function testShakeEmergency() {
+            showNotification('📱 Shake Detection Test: Sudden impact detected', 'danger');
+            setTimeout(() => {
+                triggerSOS();
+            }, 1000);
+        }
+
+        // Notification system
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type}`;
+            notification.innerHTML = message;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.style.maxWidth = '400px';
+            notification.style.animation = 'slideIn 0.5s ease';
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.5s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 500);
+            }, 5000);
+        }
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Randomly update some stats
+            if (Math.random() > 0.8) {
+                const events = [
+                    'New engineer checked in',
+                    'Material delivery updated',
+                    'Progress milestone reached',
+                    'Safety inspection completed'
+                ];
+                const randomEvent = events[Math.floor(Math.random() * events.length)];
+                showNotification(randomEvent, 'success');
+            }
+        }, 30000);
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97fabda252e03c7c',t:'MTc1Nzk2Njc0Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
